@@ -1,0 +1,9 @@
+8 8 100
+########
+#abcxxx#
+#xabyyy#
+#y.oozz.
+#abx...#
+#.xy.ab#
+#.yabab#
+########
