@@ -8,14 +8,12 @@
 typedef std::string state_t;
 
 int N, W, H, EXIT_row, EXIT_col;
-state_t START;
 
 #define LEN 1024
 #define PSS std::pair<int, state_t>
 
 #define state(row, col) state[(row) * W + (col)]
 #define child(row, col) child[(row) * W + (col)]
-#define START(row, col) START[(row) * W + (col)]
 
 std::vector<state_t>
 children (state_t state)
@@ -34,7 +32,7 @@ children (state_t state)
                 child = state;
                 while (rcol < W && state (row, rcol) == '.')
                     rcol++;
-                if (rcol < W) // && START (row, rcol) == state (row, rcol))
+                if (rcol < W)
                 {
                     if (state (row, rcol) == 'a')
                     {
@@ -68,7 +66,7 @@ children (state_t state)
                 child = state;
                 while (lcol >= 0 && state (row, lcol) == '.')
                     lcol--;
-                if (lcol >= 0) // && START (row, lcol) == state (row, lcol))
+                if (lcol >= 0)
                 {
                     if (state (row, lcol) == 'b' || state (row, lcol) == 'c' || state (row, lcol) == 'd')
                     {
@@ -98,7 +96,7 @@ children (state_t state)
                 child = state;
                 while (drow < H && state (drow, col) == '.')
                     drow++;
-                if (drow < H) // && START (drow, col) == state (drow, col))
+                if (drow < H)
                 {
                     if (state (drow, col) == 'x')
                     {
@@ -132,7 +130,7 @@ children (state_t state)
                 child = state;
                 while (urow >= 0 && state (urow, col) == '.')
                     urow--;
-                if (urow >= 0) // && START (urow, col) == state (urow, col))
+                if (urow >= 0)
                 {
                     if (state (urow, col) == 'y' || state (urow, col) == 'z' || state (urow, col) == 'w')
                     {
@@ -280,8 +278,6 @@ parse_input ()
         if (flag)
             break;
     }
-
-    START = state;
     return state;
 }
 
@@ -299,10 +295,7 @@ h_score (std::string state)
         }
     }
 
-    int urow = scar_row, drow = scar_row;
-    int col = scar_col == 1 ? 3 : 1;
-
-    int cars = 1;
+    int urow = scar_row, cars = 1;
     while (urow >= 0)
     {
         if (state (urow, scar_col) == 'b' && state (urow, 1) == '.')
