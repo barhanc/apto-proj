@@ -10,7 +10,7 @@ int N, W, H, EXIT_row, EXIT_col;
 state_t START;
 
 #define LEN 1024
-#define PII std::pair<uint_fast8_t, state_t>
+#define PII std::pair<int, state_t>
 
 #define state(row, col) state[(row) * W + (col)]
 #define child(row, col) child[(row) * W + (col)]
@@ -285,23 +285,56 @@ parse_input ()
 }
 
 int
+h_score (std::string state)
+{
+    int scar_row, scar_col;
+    for (int item = 0; item < H * W; item++)
+    {
+        int row = item / W, col = item % W;
+        if (state (row, col) == 'p' || state (row, col) == 'e')
+        {
+            scar_row = row, scar_col = col;
+            break;
+        }
+    }
+
+    int cars = 0;
+    while (scar_row >= 0)
+    {
+        if (state (scar_row, scar_col) == 'b' && state (scar_row, 1) == '.')
+            cars += 1;
+        if (state (scar_row, scar_col) == 'b' && state (scar_row, 1) != '.')
+            cars += 2;
+        if (state (scar_row, scar_col) == 'a' && state (scar_row, 3) == '.')
+            cars += 1;
+        if (state (scar_row, scar_col) == 'a' && state (scar_row, 3) != '.')
+            cars += 2;
+
+        scar_row--;
+    }
+    return cars;
+}
+
+int
 main ()
 {
     state_t state = parse_input ();
 
     std::unordered_map<state_t, state_t> parent;
-    std::unordered_map<state_t, uint_fast8_t> g_score;
+    std::unordered_map<state_t, int> g_score, f_score;
     std::priority_queue<PII, std::vector<PII>, std::greater<PII> > open_set;
 
-    g_score[state] = 0;
-    open_set.push ({ g_score[state], state });
+    int eps = 5;
+    g_score[state] = 0, f_score[state] = eps * h_score (state);
+    open_set.push ({ f_score[state], state });
 
     while (!open_set.empty ())
     {
-        std::cout << open_set.size () << std::endl;
-        auto g = open_set.top ().first;
+        auto f = open_set.top ().first;
         state = open_set.top ().second;
         open_set.pop ();
+
+        std::cout << f << std::endl;
 
         if (is_goal (state))
         {
@@ -309,17 +342,18 @@ main ()
             return 0;
         }
 
-        if (g_score[state] >= N || g != g_score[state])
+        if (g_score[state] >= N || f != f_score[state])
             continue;
 
         for (auto child : children (state))
         {
-            uint_fast8_t tentative_g_score = g_score[state] + 1;
+            int tentative_g_score = g_score[state] + 1;
             if (g_score.find (child) == g_score.end () || tentative_g_score < g_score[child])
             {
                 parent[child] = state;
                 g_score[child] = tentative_g_score;
-                open_set.push ({ tentative_g_score, child });
+                f_score[child] = tentative_g_score + eps * h_score (child);
+                open_set.push ({ f_score[child], child });
             }
         }
     }
