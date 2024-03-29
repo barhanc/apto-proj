@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <iostream>
 #include <limits>
+#include <map>
 #include <queue>
 #include <unordered_map>
 
@@ -10,7 +11,7 @@ int N, W, H, EXIT_row, EXIT_col;
 state_t START;
 
 #define LEN 1024
-#define PII std::pair<int, state_t>
+#define PSS std::pair<int, state_t>
 
 #define state(row, col) state[(row) * W + (col)]
 #define child(row, col) child[(row) * W + (col)]
@@ -67,7 +68,7 @@ children (state_t state)
                 child = state;
                 while (lcol >= 0 && state (row, lcol) == '.')
                     lcol--;
-                if (lcol >= 0) //&& START (row, lcol) == state (row, lcol))
+                if (lcol >= 0) // && START (row, lcol) == state (row, lcol))
                 {
                     if (state (row, lcol) == 'b' || state (row, lcol) == 'c' || state (row, lcol) == 'd')
                     {
@@ -298,20 +299,23 @@ h_score (std::string state)
         }
     }
 
-    int cars = 0;
-    while (scar_row >= 0)
-    {
-        if (state (scar_row, scar_col) == 'b' && state (scar_row, 1) == '.')
-            cars += 1;
-        if (state (scar_row, scar_col) == 'b' && state (scar_row, 1) != '.')
-            cars += 2;
-        if (state (scar_row, scar_col) == 'a' && state (scar_row, 3) == '.')
-            cars += 1;
-        if (state (scar_row, scar_col) == 'a' && state (scar_row, 3) != '.')
-            cars += 2;
+    int urow = scar_row, drow = scar_row;
+    int col = scar_col == 1 ? 3 : 1;
 
-        scar_row--;
+    int cars = 1;
+    while (urow >= 0)
+    {
+        if (state (urow, scar_col) == 'b' && state (urow, 1) == '.')
+            cars += 1;
+        if (state (urow, scar_col) == 'b' && state (urow, 1) != '.')
+            cars += 2;
+        if (state (urow, scar_col) == 'a' && state (urow, 3) == '.')
+            cars += 1;
+        if (state (urow, scar_col) == 'a' && state (urow, 3) != '.')
+            cars += 2;
+        urow--;
     }
+
     return cars;
 }
 
@@ -322,7 +326,7 @@ main ()
 
     std::unordered_map<state_t, state_t> parent;
     std::unordered_map<state_t, int> g_score, f_score;
-    std::priority_queue<PII, std::vector<PII>, std::greater<PII> > open_set;
+    std::priority_queue<PSS, std::vector<PSS>, std::greater<PSS> > open_set;
 
     int eps = 5;
     g_score[state] = 0, f_score[state] = eps * h_score (state);
