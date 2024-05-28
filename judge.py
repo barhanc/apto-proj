@@ -177,6 +177,10 @@ def makeMove(board, W, H, move, move_num):
 
     sx, sy = carfront(board, x, y)
     ex, ey = carend(board, x, y)
+
+    if (board[sy][sx] in "oa" and d in "UD") or (board[sy][sx] in "sx" and d in "LR"):
+        raise Exception(f"ruch {move_num} : {x} {y} {d} {l} w zlym kierunku")
+
     dean = False
     if board[sy][sx] == "o" or board[sy][sx] == "s":
         dean = True

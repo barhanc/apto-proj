@@ -1,0 +1,11 @@
+10 10 11
+##########
+#x.xabc.x#
+#y.y.ab.y#
+#o.z...xz#
+#oab.x.y.#
+#abcxyxx.#
+#abcyzyyx#
+#abczab.y#
+#abc.abcz#
+#.########

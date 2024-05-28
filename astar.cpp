@@ -284,32 +284,58 @@ parse_input ()
 int
 h_score (std::string state)
 {
-    int scar_row, scar_col;
-    for (int item = 0; item < H * W; item++)
+    int i = EXIT_row, j = EXIT_col, k = 0;
+
+    if (EXIT_row == 0)
     {
-        int row = item / W, col = item % W;
-        if (state (row, col) == 'p' || state (row, col) == 'e')
+        while (state (i, j) != 'p')
         {
-            scar_row = row, scar_col = col;
-            break;
+            if (state (i, j) == 'a'
+                || state (i, j) == 'b'
+                || state (i, j) == 'c'
+                || state (i, j) == 'd')
+                k++;
+            i++;
+        }
+    }
+    else if (EXIT_row == H - 1)
+    {
+        while (state (i, j) != 'p')
+        {
+            if (state (i, j) == 'a'
+                || state (i, j) == 'b'
+                || state (i, j) == 'c'
+                || state (i, j) == 'd')
+                k++;
+            i--;
+        }
+    }
+    else if (EXIT_col == 0)
+    {
+        while (state (i, j) != 'e')
+        {
+            if (state (i, j) == 'x'
+                || state (i, j) == 'y'
+                || state (i, j) == 'z'
+                || state (i, j) == 'w')
+                k++;
+            j++;
+        }
+    }
+    else if (EXIT_col == W - 1)
+    {
+        while (state (i, j) != 'e')
+        {
+            if (state (i, j) == 'x'
+                || state (i, j) == 'y'
+                || state (i, j) == 'z'
+                || state (i, j) == 'w')
+                k++;
+            j--;
         }
     }
 
-    int urow = scar_row, cars = 1;
-    while (urow >= 0)
-    {
-        if (state (urow, scar_col) == 'b' && state (urow, 1) == '.')
-            cars += 1;
-        if (state (urow, scar_col) == 'b' && state (urow, 1) != '.')
-            cars += 2;
-        if (state (urow, scar_col) == 'a' && state (urow, 3) == '.')
-            cars += 1;
-        if (state (urow, scar_col) == 'a' && state (urow, 3) != '.')
-            cars += 2;
-        urow--;
-    }
-
-    return cars;
+    return k;
 }
 
 int
@@ -330,8 +356,6 @@ main ()
         auto f = open_set.top ().first;
         state = open_set.top ().second;
         open_set.pop ();
-
-        std::cout << f << std::endl;
 
         if (is_goal (state))
         {
