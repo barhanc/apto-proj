@@ -1,19 +1,16 @@
 #include <algorithm>
 #include <iostream>
-#include <limits>
-#include <map>
+
 #include <queue>
 #include <unordered_map>
 
-typedef std::string state_t;
+#define state(i, j) state[(i) * W + (j)]
+#define child(i, j) child[(i) * W + (j)]
+#define paren(i, j) paren[(i) * W + (j)]
 
 int N, W, H, EXIT_row, EXIT_col;
 
-#define LEN 1024
-#define PSS std::pair<int, state_t>
-
-#define state(row, col) state[(row) * W + (col)]
-#define child(row, col) child[(row) * W + (col)]
+using state_t = std::string;
 
 std::vector<state_t>
 children (state_t state)
@@ -163,121 +160,86 @@ children (state_t state)
 void
 reconstruct_path (std::unordered_map<state_t, state_t> parent, state_t state)
 {
-    std::vector<std::string> solution;
     bool first = true;
+    std::vector<std::string> solution;
+
     while (parent.find (state) != parent.end ())
     {
-        auto child = parent[state];
-        int curr_row, curr_col, prev_row, prev_col;
-        for (int row = 0; row < H; row++)
-            for (int col = 0; col < W; col++)
-            {
-                if (state (row, col) != child (row, col)
-                    && (state (row, col) == 'a'
-                        || state (row, col) == 'x'
-                        || state (row, col) == 'e'
-                        || state (row, col) == 'p'))
-                    curr_row = row, curr_col = col;
-                if (state (row, col) != child (row, col)
-                    && (child (row, col) == 'a'
-                        || child (row, col) == 'x'
-                        || child (row, col) == 'e'
-                        || child (row, col) == 'p'))
-                    prev_row = row, prev_col = col;
-            }
-        char dir;
-        int len;
-        if (prev_row > curr_row)
-            dir = 'U', len = prev_row - curr_row;
-        if (prev_row < curr_row)
-            dir = 'D', len = curr_row - prev_row;
-        if (prev_col > curr_col)
-            dir = 'L', len = prev_col - curr_col;
-        if (prev_col < curr_col)
-            dir = 'R', len = curr_col - prev_col;
-        if (first)
-            len++;
-        first = false;
-        char line[LEN];
-        std::sprintf (line, "%d %d %c %d", prev_col, prev_row, dir, len);
-        solution.push_back ((std::string)line);
+        state_t paren = parent[state];
 
-        state = parent[state];
+        int curr_i, curr_j, prev_i, prev_j;
+
+        for (int i = 0; i < H; i++)
+            for (int j = 0; j < W; j++)
+                if (state (i, j) != paren (i, j))
+                {
+                    if (state (i, j) == 'a' || state (i, j) == 'x' || state (i, j) == 'e' || state (i, j) == 'p')
+                        curr_i = i, curr_j = j;
+
+                    if (paren (i, j) == 'a' || paren (i, j) == 'x' || paren (i, j) == 'e' || paren (i, j) == 'p')
+                        prev_i = i, prev_j = j;
+                }
+
+        int len;
+        char dir;
+        if (prev_i > curr_i)
+            dir = 'U', len = prev_i - curr_i;
+        else if (prev_i < curr_i)
+            dir = 'D', len = curr_i - prev_i;
+        else if (prev_j > curr_j)
+            dir = 'L', len = prev_j - curr_j;
+        else
+            dir = 'R', len = curr_j - prev_j;
+
+        if (first)
+            len++, first = false;
+
+        solution.push_back (std::to_string (prev_j) + " " + std::to_string (prev_i) + " " + dir + " " + std::to_string (len));
+
+        state = paren;
     }
 
     std::cout << solution.size () << std::endl;
     std::reverse (solution.begin (), solution.end ());
     for (auto line : solution)
         std::cout << line << std::endl;
-}
-
-bool
-is_goal (state_t state)
-{
-    return (state (EXIT_row, EXIT_col) == 'p'
-            || state (EXIT_row, EXIT_col) == 'q'
-            || state (EXIT_row, EXIT_col) == 'r'
-            || state (EXIT_row, EXIT_col) == 's'
-            || state (EXIT_row, EXIT_col) == 'e'
-            || state (EXIT_row, EXIT_col) == 'f'
-            || state (EXIT_row, EXIT_col) == 'g'
-            || state (EXIT_row, EXIT_col) == 'h');
+    return;
 }
 
 state_t
-parse_input ()
+input ()
 {
+    state_t state;
     std::cin >> W >> H >> N;
-    char board[W * H + 1];
 
-    for (int row = 0; row < H; row++)
-        for (int col = 0; col < W; col++)
-            std::cin >> board[row * W + col];
+    state.resize (H * W);
 
-    board[H * W] = '\0';
-
-    state_t state = board;
-
-    for (int row = 0; row < H; row++)
-        for (int col : { 0, W - 1 })
-            if (state (row, col) == '.')
-                EXIT_row = row, EXIT_col = col;
-    for (int col = 0; col < W; col++)
-        for (int row : { 0, H - 1 })
-            if (state (row, col) == '.')
-                EXIT_row = row, EXIT_col = col;
-
-    bool flag = false;
-    for (int row = 0; row < H; row++)
-    {
-        for (int col = 0; col < W; col++)
+    for (int i = 0; i < H; i++)
+        for (int j = 0; j < W; j++)
         {
-            if (state (row, col) == 'o' && state (row + 1, col) == 'o')
-            {
-                int i = 0;
-                while (state (row, col) == 'o')
-                {
-                    state (row, col) = "pqrs"[i];
-                    row++, i++;
-                }
-                flag = true;
-                break;
-            }
-            if (state (row, col) == 'o' && state (row, col + 1) == 'o')
-            {
-                int i = 0;
-                while (state (row, col) == 'o')
-                {
-                    state (row, col) = "efgh"[i];
-                    col++, i++;
-                }
-                flag = true;
-                break;
-            }
+            std::cin >> state (i, j);
+
+            if ((i == 0 || j == 0 || i == H - 1 || j == W - 1) && state (i, j) == '.')
+                EXIT_row = i, EXIT_col = j;
         }
-        if (flag)
-            break;
-    }
+
+    for (int i = 0; i < H; i++)
+        for (int j = 0; j < W; j++)
+            if (state (i, j) == 'o')
+            {
+                int k = 0;
+                if (i + 1 < H && state (i + 1, j) == 'o')
+                    do
+                        state (i, j) = "pqrs"[k], i++, k++;
+                    while (i < H && state (i, j) == 'o');
+                else
+                    do
+                        state (i, j) = "efgh"[k], j++, k++;
+                    while (j < W && state (i, j) == 'o');
+
+                goto exit;
+            }
+exit:
     return state;
 }
 
@@ -286,76 +248,54 @@ h_score (std::string state)
 {
     int i = EXIT_row, j = EXIT_col, k = 0;
 
-    if (EXIT_row == 0)
+    if (EXIT_row == 0 || EXIT_row == H - 1)
     {
-        while (state (i, j) != 'p')
-        {
-            if (state (i, j) == 'a'
-                || state (i, j) == 'b'
-                || state (i, j) == 'c'
-                || state (i, j) == 'd')
+        int d = EXIT_row == 0 ? 1 : -1;
+        for (; state (i, j) != 'p'; i += d)
+            if (state (i, j) == 'a' || state (i, j) == 'b' || state (i, j) == 'c' || state (i, j) == 'd')
                 k++;
-            i++;
-        }
     }
-    else if (EXIT_row == H - 1)
+    else
     {
-        while (state (i, j) != 'p')
-        {
-            if (state (i, j) == 'a'
-                || state (i, j) == 'b'
-                || state (i, j) == 'c'
-                || state (i, j) == 'd')
+        int d = EXIT_col == 0 ? 1 : -1;
+        for (; state (i, j) != 'e'; j += d)
+            if (state (i, j) == 'x' || state (i, j) == 'y' || state (i, j) == 'z' || state (i, j) == 'w')
                 k++;
-            i--;
-        }
-    }
-    else if (EXIT_col == 0)
-    {
-        while (state (i, j) != 'e')
-        {
-            if (state (i, j) == 'x'
-                || state (i, j) == 'y'
-                || state (i, j) == 'z'
-                || state (i, j) == 'w')
-                k++;
-            j++;
-        }
-    }
-    else if (EXIT_col == W - 1)
-    {
-        while (state (i, j) != 'e')
-        {
-            if (state (i, j) == 'x'
-                || state (i, j) == 'y'
-                || state (i, j) == 'z'
-                || state (i, j) == 'w')
-                k++;
-            j--;
-        }
     }
 
     return k;
 }
 
+bool
+is_goal (state_t state)
+{
+    int i = EXIT_row, j = EXIT_col;
+    return state (i, j) == 'p' || state (i, j) == 'q' || state (i, j) == 'r' || state (i, j) == 's'
+           || state (i, j) == 'e' || state (i, j) == 'f' || state (i, j) == 'g' || state (i, j) == 'h';
+}
+
 int
 main ()
 {
-    state_t state = parse_input ();
+    state_t state = input ();
 
+    using pair = std::pair<int, state_t>;
+    std::unordered_map<state_t, int> g_score;
+    std::unordered_map<state_t, int> f_score;
     std::unordered_map<state_t, state_t> parent;
-    std::unordered_map<state_t, int> g_score, f_score;
-    std::priority_queue<PSS, std::vector<PSS>, std::greater<PSS> > open_set;
+    std::priority_queue<pair, std::vector<pair>, std::greater<pair> > pq;
 
-    int eps = 5;
-    g_score[state] = 0, f_score[state] = eps * h_score (state);
-    open_set.push ({ f_score[state], state });
+    int eps = 50;
+    g_score[state] = 0;
+    f_score[state] = eps * h_score (state);
 
-    while (!open_set.empty ())
+    pq.push ({ f_score[state], state });
+
+    while (!pq.empty ())
     {
-        auto f = open_set.top ().first;
-        state = open_set.top ().second;
-        open_set.pop ();
+        int f = pq.top ().first;
+        state = pq.top ().second;
+        pq.pop ();
 
         if (is_goal (state))
         {
@@ -366,19 +306,16 @@ main ()
         if (g_score[state] >= N || f != f_score[state])
             continue;
 
-        for (auto child : children (state))
-        {
-            int tentative_g_score = g_score[state] + 1;
-            if (g_score.find (child) == g_score.end () || tentative_g_score < g_score[child])
+        for (state_t child : children (state))
+            if (g_score.find (child) == g_score.end () || g_score[state] + 1 < g_score[child])
             {
                 parent[child] = state;
-                g_score[child] = tentative_g_score;
-                f_score[child] = tentative_g_score + eps * h_score (child);
-                open_set.push ({ f_score[child], child });
+                g_score[child] = g_score[state] + 1;
+                f_score[child] = g_score[child] + eps * h_score (child);
+                pq.push ({ f_score[child], child });
             }
-        }
     }
 
-    std::cout << "ERROR" << std::endl;
-    return -1;
+    std::cout << "Solution not found!" << std::endl;
+    return 0;
 }
