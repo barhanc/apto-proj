@@ -41,7 +41,6 @@ input ()
                     do
                         state (i, j) = "efgh"[k], j++, k++;
                     while (j < W && state (i, j) == 'o');
-
                 goto exit;
             }
 exit:
