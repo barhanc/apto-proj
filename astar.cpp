@@ -15,142 +15,82 @@ using state_t = std::string;
 std::vector<state_t>
 children (state_t state)
 {
+    char c;
     state_t child;
     std::vector<state_t> children;
 
-    for (int row = 0; row < H; row++)
-        for (int col = 0; col < W; col++)
-            if (state (row, col) == '.')
+    for (int i = 0; i < H; i++)
+        for (int j = 0; j < W; j++)
+            if (state (i, j) == '.')
             {
-                int lcol = col, rcol = col;
-                int urow = row, drow = row;
+                int ui = i, di = i, lj = j, rj = j;
 
-                // Go right
+                // GO RIGHT
                 child = state;
-                while (rcol < W && state (row, rcol) == '.')
-                    rcol++;
-                if (rcol < W)
+                while (rj < W && (c = state (i, rj)) == '.')
+                    rj++;
+
+                if (rj < W && (c == 'a' || c == 'e'))
                 {
-                    if (state (row, rcol) == 'a')
-                    {
-                        int scol = col;
-                        do
-                        {
-                            std::swap (child (row, rcol), child (row, scol));
-                            scol++, rcol++;
-                        } while (rcol < W
-                                 && (child (row, rcol) == 'b'
-                                     || child (row, rcol) == 'c'
-                                     || child (row, rcol) == 'd'));
-                        children.push_back (child);
-                    }
-                    else if (state (row, rcol) == 'e')
-                    {
-                        int scol = col;
-                        do
-                        {
-                            std::swap (child (row, rcol), child (row, scol));
-                            scol++, rcol++;
-                        } while (rcol < W
-                                 && (child (row, rcol) == 'f'
-                                     || child (row, rcol) == 'g'
-                                     || child (row, rcol) == 'h'));
-                        children.push_back (child);
-                    }
+                    int sj = j;
+                    do
+                        std::swap (child (i, rj), child (i, sj)), sj++, rj++;
+                    while (rj < W
+                           && (child (i, rj) == (c == 'a' ? 'b' : 'f')
+                               || child (i, rj) == (c == 'a' ? 'c' : 'g')
+                               || child (i, rj) == (c == 'a' ? 'd' : 'h')));
+
+                    children.push_back (child);
                 }
 
-                // Go left
+                // GO DOWN
                 child = state;
-                while (lcol >= 0 && state (row, lcol) == '.')
-                    lcol--;
-                if (lcol >= 0)
+                while (di < H && (c = state (di, j)) == '.')
+                    di++;
+
+                if (di < H && (c == 'x' || c == 'p'))
                 {
-                    if (state (row, lcol) == 'b' || state (row, lcol) == 'c' || state (row, lcol) == 'd')
-                    {
-                        int scol = col;
-                        do
-                        {
-                            std::swap (child (row, lcol), child (row, scol));
-                            scol--, lcol--;
-                        } while (child (row, lcol) != 'a');
-                        std::swap (child (row, lcol), child (row, scol));
-                        children.push_back (child);
-                    }
-                    else if (state (row, lcol) == 'f' || state (row, lcol) == 'g' || state (row, lcol) == 'h')
-                    {
-                        int scol = col;
-                        do
-                        {
-                            std::swap (child (row, lcol), child (row, scol));
-                            scol--, lcol--;
-                        } while (child (row, lcol) != 'e');
-                        std::swap (child (row, lcol), child (row, scol));
-                        children.push_back (child);
-                    }
+                    int si = i;
+                    do
+                        std::swap (child (di, j), child (si, j)), si++, di++;
+                    while (di < H
+                           && (child (di, j) == (c == 'x' ? 'y' : 'q')
+                               || child (di, j) == (c == 'x' ? 'z' : 'r')
+                               || child (di, j) == (c == 'x' ? 'w' : 's')));
+
+                    children.push_back (child);
                 }
 
-                // Go down
+                // GO LEFT
                 child = state;
-                while (drow < H && state (drow, col) == '.')
-                    drow++;
-                if (drow < H)
+                while (lj >= 0 && (c = state (i, lj)) == '.')
+                    lj--;
+
+                if (lj >= 0 && (c == 'b' || c == 'c' || c == 'd' || c == 'f' || c == 'g' || c == 'h'))
                 {
-                    if (state (drow, col) == 'x')
-                    {
-                        int srow = row;
-                        do
-                        {
-                            std::swap (child (drow, col), child (srow, col));
-                            drow++, srow++;
-                        } while (drow < H
-                                 && (child (drow, col) == 'y'
-                                     || child (drow, col) == 'z'
-                                     || child (drow, col) == 'w'));
-                        children.push_back (child);
-                    }
-                    else if (state (drow, col) == 'p')
-                    {
-                        int srow = row;
-                        do
-                        {
-                            std::swap (child (drow, col), child (srow, col));
-                            drow++, srow++;
-                        } while (drow < H
-                                 && (child (drow, col) == 'q'
-                                     || child (drow, col) == 'r'
-                                     || child (drow, col) == 's'));
-                        children.push_back (child);
-                    }
+                    int sj = j;
+                    do
+                        std::swap (child (i, lj), child (i, sj)), sj--, lj--;
+                    while (lj >= 0 && child (i, lj) != (c == 'b' || c == 'c' || c == 'd' ? 'a' : 'e'));
+                    std::swap (child (i, lj), child (i, sj));
+
+                    children.push_back (child);
                 }
 
-                // Go up
+                // GO UP
                 child = state;
-                while (urow >= 0 && state (urow, col) == '.')
-                    urow--;
-                if (urow >= 0)
+                while (ui >= 0 && (c = state (ui, j)) == '.')
+                    ui--;
+
+                if (ui >= 0 && (c == 'y' || c == 'z' || c == 'w' || c == 'q' || c == 'r' || c == 's'))
                 {
-                    if (state (urow, col) == 'y' || state (urow, col) == 'z' || state (urow, col) == 'w')
-                    {
-                        int srow = row;
-                        do
-                        {
-                            std::swap (child (urow, col), child (srow, col));
-                            urow--, srow--;
-                        } while (child (urow, col) != 'x');
-                        std::swap (child (urow, col), child (srow, col));
-                        children.push_back (child);
-                    }
-                    else if (state (urow, col) == 'q' || state (urow, col) == 'r' || state (urow, col) == 's')
-                    {
-                        int srow = row;
-                        do
-                        {
-                            std::swap (child (urow, col), child (srow, col));
-                            urow--, srow--;
-                        } while (child (urow, col) != 'p');
-                        std::swap (child (urow, col), child (srow, col));
-                        children.push_back (child);
-                    }
+                    int si = i;
+                    do
+                        std::swap (child (ui, j), child (si, j)), si--, ui--;
+                    while (ui >= 0 && child (ui, j) != (c == 'y' || c == 'z' || c == 'w' ? 'x' : 'p'));
+                    std::swap (child (ui, j), child (si, j));
+
+                    children.push_back (child);
                 }
             }
 
