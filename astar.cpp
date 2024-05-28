@@ -9,7 +9,7 @@
 #define paren(i, j) paren[(i) * W + (j)]
 
 using state_t = std::string;
-int N, W, H, EXIT_row, EXIT_col;
+int N, W, H, EXIT_i, EXIT_j;
 
 state_t
 input ()
@@ -25,7 +25,7 @@ input ()
             std::cin >> state (i, j);
 
             if ((i == 0 || j == 0 || i == H - 1 || j == W - 1) && state (i, j) == '.')
-                EXIT_row = i, EXIT_col = j;
+                EXIT_i = i, EXIT_j = j;
         }
 
     for (int i = 0; i < H; i++)
@@ -185,18 +185,18 @@ children (state_t state)
 int
 h_score (std::string state)
 {
-    int i = EXIT_row, j = EXIT_col, k = 0;
+    int i = EXIT_i, j = EXIT_j, k = 0;
 
-    if (EXIT_row == 0 || EXIT_row == H - 1)
+    if (EXIT_i == 0 || EXIT_i == H - 1)
     {
-        int d = EXIT_row == 0 ? 1 : -1;
+        int d = EXIT_i == 0 ? 1 : -1;
         for (; state (i, j) != 'p'; i += d)
             if (state (i, j) == 'a' || state (i, j) == 'b' || state (i, j) == 'c' || state (i, j) == 'd')
                 k++;
     }
     else
     {
-        int d = EXIT_col == 0 ? 1 : -1;
+        int d = EXIT_j == 0 ? 1 : -1;
         for (; state (i, j) != 'e'; j += d)
             if (state (i, j) == 'x' || state (i, j) == 'y' || state (i, j) == 'z' || state (i, j) == 'w')
                 k++;
@@ -208,7 +208,7 @@ h_score (std::string state)
 bool
 is_goal (state_t state)
 {
-    int i = EXIT_row, j = EXIT_col;
+    int i = EXIT_i, j = EXIT_j;
     return state (i, j) == 'p' || state (i, j) == 'q' || state (i, j) == 'r' || state (i, j) == 's'
            || state (i, j) == 'e' || state (i, j) == 'f' || state (i, j) == 'g' || state (i, j) == 'h';
 }
