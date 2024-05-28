@@ -8,9 +8,94 @@
 #define child(i, j) child[(i) * W + (j)]
 #define paren(i, j) paren[(i) * W + (j)]
 
+using state_t = std::string;
 int N, W, H, EXIT_row, EXIT_col;
 
-using state_t = std::string;
+state_t
+input ()
+{
+    state_t state;
+    std::cin >> W >> H >> N;
+
+    state.resize (H * W);
+
+    for (int i = 0; i < H; i++)
+        for (int j = 0; j < W; j++)
+        {
+            std::cin >> state (i, j);
+
+            if ((i == 0 || j == 0 || i == H - 1 || j == W - 1) && state (i, j) == '.')
+                EXIT_row = i, EXIT_col = j;
+        }
+
+    for (int i = 0; i < H; i++)
+        for (int j = 0; j < W; j++)
+            if (state (i, j) == 'o')
+            {
+                int k = 0;
+                if (i + 1 < H && state (i + 1, j) == 'o')
+                    do
+                        state (i, j) = "pqrs"[k], i++, k++;
+                    while (i < H && state (i, j) == 'o');
+                else
+                    do
+                        state (i, j) = "efgh"[k], j++, k++;
+                    while (j < W && state (i, j) == 'o');
+
+                goto exit;
+            }
+exit:
+    return state;
+}
+
+void
+reconstruct_path (std::unordered_map<state_t, state_t> parent, state_t state)
+{
+    bool first = true;
+    std::vector<std::string> solution;
+
+    while (parent.find (state) != parent.end ())
+    {
+        state_t paren = parent[state];
+
+        int curr_i, curr_j, prev_i, prev_j;
+
+        for (int i = 0; i < H; i++)
+            for (int j = 0; j < W; j++)
+                if (state (i, j) != paren (i, j))
+                {
+                    if (state (i, j) == 'a' || state (i, j) == 'x' || state (i, j) == 'e' || state (i, j) == 'p')
+                        curr_i = i, curr_j = j;
+
+                    if (paren (i, j) == 'a' || paren (i, j) == 'x' || paren (i, j) == 'e' || paren (i, j) == 'p')
+                        prev_i = i, prev_j = j;
+                }
+
+        int len;
+        char dir;
+        if (prev_i > curr_i)
+            dir = 'U', len = prev_i - curr_i;
+        else if (prev_i < curr_i)
+            dir = 'D', len = curr_i - prev_i;
+        else if (prev_j > curr_j)
+            dir = 'L', len = prev_j - curr_j;
+        else
+            dir = 'R', len = curr_j - prev_j;
+
+        if (first)
+            len++, first = false;
+
+        solution.push_back (std::to_string (prev_j) + " " + std::to_string (prev_i) + " " + dir + " " + std::to_string (len));
+
+        state = paren;
+    }
+
+    std::cout << solution.size () << std::endl;
+    std::reverse (solution.begin (), solution.end ());
+    for (auto line : solution)
+        std::cout << line << std::endl;
+    return;
+}
 
 std::vector<state_t>
 children (state_t state)
@@ -95,92 +180,6 @@ children (state_t state)
             }
 
     return children;
-}
-
-void
-reconstruct_path (std::unordered_map<state_t, state_t> parent, state_t state)
-{
-    bool first = true;
-    std::vector<std::string> solution;
-
-    while (parent.find (state) != parent.end ())
-    {
-        state_t paren = parent[state];
-
-        int curr_i, curr_j, prev_i, prev_j;
-
-        for (int i = 0; i < H; i++)
-            for (int j = 0; j < W; j++)
-                if (state (i, j) != paren (i, j))
-                {
-                    if (state (i, j) == 'a' || state (i, j) == 'x' || state (i, j) == 'e' || state (i, j) == 'p')
-                        curr_i = i, curr_j = j;
-
-                    if (paren (i, j) == 'a' || paren (i, j) == 'x' || paren (i, j) == 'e' || paren (i, j) == 'p')
-                        prev_i = i, prev_j = j;
-                }
-
-        int len;
-        char dir;
-        if (prev_i > curr_i)
-            dir = 'U', len = prev_i - curr_i;
-        else if (prev_i < curr_i)
-            dir = 'D', len = curr_i - prev_i;
-        else if (prev_j > curr_j)
-            dir = 'L', len = prev_j - curr_j;
-        else
-            dir = 'R', len = curr_j - prev_j;
-
-        if (first)
-            len++, first = false;
-
-        solution.push_back (std::to_string (prev_j) + " " + std::to_string (prev_i) + " " + dir + " " + std::to_string (len));
-
-        state = paren;
-    }
-
-    std::cout << solution.size () << std::endl;
-    std::reverse (solution.begin (), solution.end ());
-    for (auto line : solution)
-        std::cout << line << std::endl;
-    return;
-}
-
-state_t
-input ()
-{
-    state_t state;
-    std::cin >> W >> H >> N;
-
-    state.resize (H * W);
-
-    for (int i = 0; i < H; i++)
-        for (int j = 0; j < W; j++)
-        {
-            std::cin >> state (i, j);
-
-            if ((i == 0 || j == 0 || i == H - 1 || j == W - 1) && state (i, j) == '.')
-                EXIT_row = i, EXIT_col = j;
-        }
-
-    for (int i = 0; i < H; i++)
-        for (int j = 0; j < W; j++)
-            if (state (i, j) == 'o')
-            {
-                int k = 0;
-                if (i + 1 < H && state (i + 1, j) == 'o')
-                    do
-                        state (i, j) = "pqrs"[k], i++, k++;
-                    while (i < H && state (i, j) == 'o');
-                else
-                    do
-                        state (i, j) = "efgh"[k], j++, k++;
-                    while (j < W && state (i, j) == 'o');
-
-                goto exit;
-            }
-exit:
-    return state;
 }
 
 int
