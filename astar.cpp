@@ -182,7 +182,7 @@ children (state_t state)
 }
 
 int
-h_score (std::string state)
+h_score (state_t state)
 {
     int i = EXIT_i, j = EXIT_j, k = 0;
 
