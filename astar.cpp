@@ -184,24 +184,21 @@ children (state_t state)
 int
 h_score (state_t state)
 {
-    int i = EXIT_i, j = EXIT_j, k = 0;
+    int i = EXIT_i, j = EXIT_j, cnt = 0;
+    int di, dj;
+    char h;
+    std::string c;
 
     if (EXIT_i == 0 || EXIT_i == H - 1)
-    {
-        int d = EXIT_i == 0 ? 1 : -1;
-        for (; state (i, j) != 'p'; i += d)
-            if (state (i, j) == 'a' || state (i, j) == 'b' || state (i, j) == 'c' || state (i, j) == 'd')
-                k++;
-    }
+        di = EXIT_i == 0 ? 1 : -1, dj = 0, c = "abcd", h = 'p';
     else
-    {
-        int d = EXIT_j == 0 ? 1 : -1;
-        for (; state (i, j) != 'e'; j += d)
-            if (state (i, j) == 'x' || state (i, j) == 'y' || state (i, j) == 'z' || state (i, j) == 'w')
-                k++;
-    }
+        dj = EXIT_j == 0 ? 1 : -1, di = 0, c = "xyzw", h = 'e';
 
-    return k;
+    for (; state (i, j) != h; i += di, j += dj)
+        if (state (i, j) == c[0] || state (i, j) == c[1] || state (i, j) == c[2] || state (i, j) == c[3])
+            cnt++;
+
+    return cnt;
 }
 
 bool

@@ -1,3 +1,6 @@
 .vscode
 *.out
 *.o
+t6.in
+t7.in
+t8.in
