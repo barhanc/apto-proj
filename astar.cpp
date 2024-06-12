@@ -184,11 +184,11 @@ children (state_t state)
 int
 h_score (state_t state)
 {
-    int i = EXIT_i, j = EXIT_j, cnt = 0;
+    int i = EXIT_i, j = EXIT_j, cnt = 1;
+
     int di, dj;
     char h;
     std::string c;
-
     if (EXIT_i == 0 || EXIT_i == H - 1)
         di = EXIT_i == 0 ? 1 : -1, dj = 0, c = "abcd", h = 'p';
     else
@@ -220,7 +220,7 @@ main ()
     std::unordered_map<state_t, state_t> parent;
     std::priority_queue<pair, std::vector<pair>, std::greater<pair> > pq;
 
-    int eps = 50;
+    int eps = 5000000;
     g_score[state] = 0;
     f_score[state] = eps * h_score (state);
 
